@@ -40,7 +40,7 @@ class General(commands.Cog):
         )
 
         embed.add_field(
-            name="其他",
+            name="趣味",
             value=(
                 f"`{prefix}hello` — 打招呼\n"
                 f"`{prefix}roll [面數]` — 擲骰子\n"
@@ -48,6 +48,16 @@ class General(commands.Cog):
                 f"`{prefix}choose 選1 選2` — 做決定\n"
                 f"`{prefix}8ball <問題>` — 占卜\n"
                 f"`{prefix}say <內容>` — 代為傳話"
+            ),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="♎ 星座運勢",
+            value=(
+                f"`{prefix}星座` — 開選單選星座\n"
+                f"`{prefix}星座 獅子座` — 直接查指定星座\n"
+                f"每天結果固定，同天問同答。"
             ),
             inline=False,
         )

@@ -19,6 +19,7 @@ COGS = [
     "cogs.info",
     "cogs.fun",
     "cogs.events",
+    "cogs.zodiac",
 ]
 
 
