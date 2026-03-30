@@ -1,0 +1,18 @@
+# 環境變數（不要上傳到 Git！）
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# 日誌
+*.log
