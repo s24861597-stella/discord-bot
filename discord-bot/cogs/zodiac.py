@@ -120,7 +120,7 @@ def build_fortune_embed(zodiac: str) -> discord.Embed:
     embed.add_field(name="戀愛提示", value=love_text,  inline=False)
     embed.add_field(name="財運提示", value=money_text, inline=False)
     embed.add_field(name="事業提示", value=work_text,  inline=False)
-    embed.set_footer(text="本座已言盡於此。信不信由你。")
+    embed.set_footer(text="星象不說謊。人才說謊。")
     return embed
 
 
