@@ -72,26 +72,28 @@ class Fun(commands.Cog):
     async def eight_ball(self, ctx, *, question: str):
         """占卜"""
         responses = [
-            ("是。",          discord.Color.dark_green()),
-            ("當然。",        discord.Color.dark_green()),
-            ("毫無疑問。",    discord.Color.dark_green()),
-            ("確定。",        discord.Color.dark_green()),
-            ("可能吧。",      discord.Color.dark_green()),
-            ("暫時不明。",    discord.Color.dark_gray()),
-            ("再想想。",      discord.Color.dark_gray()),
-            ("說不準。",      discord.Color.dark_gray()),
-            ("現在問不對。",  discord.Color.dark_gray()),
-            ("不。",          discord.Color.dark_red()),
-            ("別抱希望了。",  discord.Color.dark_red()),
-            ("不可能。",      discord.Color.dark_red()),
-            ("想都不用想。",  discord.Color.dark_red()),
-            ("放棄吧。",      discord.Color.dark_red()),
+            ("是。",          "✅", discord.Color.dark_green()),
+            ("當然。",        "✅", discord.Color.dark_green()),
+            ("毫無疑問。",    "✅", discord.Color.dark_green()),
+            ("確定。",        "✅", discord.Color.dark_green()),
+            ("可能吧。",      "✅", discord.Color.dark_green()),
+            ("暫時不明。",    "🔮", discord.Color.dark_gray()),
+            ("再想想。",      "🔮", discord.Color.dark_gray()),
+            ("說不準。",      "🔮", discord.Color.dark_gray()),
+            ("現在問不對。",  "🔮", discord.Color.dark_gray()),
+            ("不。",          "❌", discord.Color.dark_red()),
+            ("別抱希望了。",  "❌", discord.Color.dark_red()),
+            ("不可能。",      "❌", discord.Color.dark_red()),
+            ("想都不用想。",  "❌", discord.Color.dark_red()),
+            ("放棄吧。",      "❌", discord.Color.dark_red()),
         ]
 
-        response, color = random.choice(responses)
-        embed = discord.Embed(color=color)
-        embed.add_field(name="問題", value=question, inline=False)
-        embed.add_field(name="答覆", value=f"**{response}**", inline=False)
+        response, icon, color = random.choice(responses)
+        embed = discord.Embed(
+            description=f"「{question}」\n\n{icon} **{response}**",
+            color=color,
+        )
+        embed.set_footer(text="本座已言盡於此。")
         await ctx.send(embed=embed)
 
 
