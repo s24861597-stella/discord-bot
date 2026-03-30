@@ -18,6 +18,7 @@ COGS = [
     "cogs.general",
     "cogs.info",
     "cogs.fun",
+    "cogs.events",
 ]
 
 
