@@ -14,59 +14,61 @@ class General(commands.Cog):
         prefix = self.bot.command_prefix
 
         embed = discord.Embed(
-            title="📖 指令幫助",
-            description=f"使用 `{prefix}<指令名稱>` 來執行指令",
-            color=discord.Color.blue(),
+            title="指令清單",
+            description=f"前綴：`{prefix}` ── 看清楚，別問我兩遍。",
+            color=discord.Color.dark_gray(),
         )
 
         embed.add_field(
-            name="🔧 一般指令",
+            name="基本",
             value=(
-                f"`{prefix}help` — 顯示此幫助選單\n"
-                f"`{prefix}ping` — 查看 Bot 的延遲\n"
-                f"`{prefix}invite` — 取得 Bot 邀請連結"
+                f"`{prefix}help` — 這份清單\n"
+                f"`{prefix}ping` — 確認連線\n"
+                f"`{prefix}invite` — 邀請連結"
             ),
             inline=False,
         )
 
         embed.add_field(
-            name="ℹ️ 資訊指令",
+            name="查詢",
             value=(
-                f"`{prefix}userinfo [成員]` — 查看成員資訊\n"
-                f"`{prefix}serverinfo` — 查看伺服器資訊\n"
-                f"`{prefix}avatar [成員]` — 查看成員頭像"
+                f"`{prefix}userinfo [@成員]` — 成員資料\n"
+                f"`{prefix}serverinfo` — 伺服器資料\n"
+                f"`{prefix}avatar [@成員]` — 查看頭像"
             ),
             inline=False,
         )
 
         embed.add_field(
-            name="🎉 趣味指令",
+            name="其他",
             value=(
                 f"`{prefix}hello` — 打招呼\n"
-                f"`{prefix}roll [骰子面數]` — 擲骰子（預設 6 面）\n"
+                f"`{prefix}roll [面數]` — 擲骰子\n"
                 f"`{prefix}flip` — 擲硬幣\n"
-                f"`{prefix}say <訊息>` — 讓 Bot 說話"
+                f"`{prefix}choose 選1 選2` — 做決定\n"
+                f"`{prefix}8ball <問題>` — 占卜\n"
+                f"`{prefix}say <內容>` — 代為傳話"
             ),
             inline=False,
         )
 
-        embed.set_footer(text=f"由 {self.bot.user.name} 提供服務")
+        embed.set_footer(text="沒有下一次提醒了。")
         await ctx.send(embed=embed)
 
     @commands.command(name="ping")
     async def ping(self, ctx):
-        """查看 Bot 的延遲"""
-        latency = round(self.bot.latency * 1000)
+        """查看延遲"""
+        latency = round(ctx.bot.latency * 1000)
+        status = "正常。" if latency < 100 else "有點慢。"
         embed = discord.Embed(
-            title="🏓 Pong!",
-            description=f"Bot 延遲：**{latency}ms**",
-            color=discord.Color.green() if latency < 100 else discord.Color.yellow(),
+            description=f"延遲 **{latency}ms**。{status}",
+            color=discord.Color.dark_gray(),
         )
         await ctx.send(embed=embed)
 
     @commands.command(name="invite")
     async def invite(self, ctx):
-        """取得 Bot 邀請連結"""
+        """取得邀請連結"""
         permissions = discord.Permissions(
             send_messages=True,
             read_messages=True,
@@ -76,11 +78,10 @@ class General(commands.Cog):
             add_reactions=True,
             manage_messages=True,
         )
-        url = discord.utils.oauth_url(self.bot.user.id, permissions=permissions)
+        url = discord.utils.oauth_url(ctx.bot.user.id, permissions=permissions)
         embed = discord.Embed(
-            title="📨 邀請 Bot",
-            description=f"[點擊這裡邀請 {self.bot.user.name} 到你的伺服器]({url})",
-            color=discord.Color.blurple(),
+            description=f"[邀請連結]({url})。用好。",
+            color=discord.Color.dark_gray(),
         )
         await ctx.send(embed=embed)
 

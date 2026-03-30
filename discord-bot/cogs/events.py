@@ -1,56 +1,81 @@
 import random
+import datetime
 import discord
 from discord.ext import commands
 
 
 MENTION_RESPONSES = [
-    "哈囉！{mention} 有什麼我能幫你的嗎？😊",
-    "嗨！{mention} 叫我幹嘛～ 輸入 `!help` 看看我能做什麼！✨",
-    "在的在的！{mention} 我在這裡！🙋",
-    "你好！{mention} 需要幫忙嗎？🌟",
-    "什麼事嗎？{mention} 說吧！我洗耳恭聽 👂",
-    "！{mention} 有事找我？輸入 `!help` 看我的指令清單！🎯",
+    "叫我？說重點。",
+    "本座在。有事說事。",
+    "{mention} 找我何事。",
+    "嗯。說。",
+    "不是讓你站在這裡發呆的。",
+    "有話直說，我時間寶貴。",
+    "說。",
 ]
 
 AUTO_REPLIES = [
     (["早安", "早上好", "good morning", "gm"], [
-        "早安！{mention} ☀️ 今天也要加油喔！",
-        "早安！{mention} 美好的一天從現在開始！🌅",
-        "早安早安！{mention} 記得吃早餐哦 🍳",
+        "起這麼早。",
+        "{mention} 早。",
+        "嗯。",
+        "今天的事今天做完。",
     ]),
     (["晚安", "好夢", "good night", "gn"], [
-        "晚安！{mention} 做個好夢 🌙✨",
-        "晚安晚安！{mention} 明天見～ 💤",
-        "晚安！{mention} 好好休息 🛌",
+        "去睡吧。明天還要上線。",
+        "{mention} 早點休息。",
+        "嗯。",
+        "別熬夜。",
     ]),
     (["謝謝", "感謝", "thanks", "thank you", "thx"], [
-        "不客氣！{mention} 😊",
-        "哈哈 這點小事不算什麼！{mention} 🎉",
-        "不用謝啦！{mention} 隨時為你服務 💪",
+        "不必謝。",
+        "這是應該的。",
+        "嗯。",
+        "記住就好。",
     ]),
     (["你好", "哈囉", "嗨", "hi", "hello", "hey"], [
-        "哈囉！{mention} 你好呀！😄",
-        "嗨嗨！{mention} 好久不見！（才怪）😂",
-        "你好！{mention} 今天過得怎麼樣？🌟",
+        "嗯。",
+        "。",
+        "{mention} 有事？",
+        "說。",
     ]),
     (["無聊", "好無聊", "bored"], [
-        "無聊的話來玩玩指令吧！{mention} 試試 `!roll`、`!8ball`、`!flip` 😆",
-        "無聊？{mention} 那來擲個骰子吧！`!roll 100` 🎲",
-        "有我陪著你就不無聊了！{mention} 一起玩 `!choose` 吧 🎉",
+        "無聊？那就去做點有意義的事。",
+        "時間是自己的。別浪費。",
+        "去玩 `!roll` 或 `!8ball`，別在這裡虛度。",
     ]),
     (["開心", "好開心", "快樂", "happy", "yay"], [
-        "哇！{mention} 開心就好！😄🎊",
-        "開心太好了！{mention} 把快樂分享給大家吧！🥳",
-        "看到你開心我也開心！{mention} ✨",
+        "嗯。",
+        "。",
+        "高興就好。別太鬧。",
     ]),
     (["難過", "傷心", "哭", "sad", "😢", "😭"], [
-        "唉...{mention} 還好嗎？有什麼煩惱可以說說看 💙",
-        "別傷心了！{mention} 一切都會好起來的 🌈",
-        "抱抱！{mention} 我在這裡陪你 🤗",
+        "哭什麼。擦乾眼淚站起來。",
+        "{mention} 說說看發生什麼事了。",
+        "……過去了就過去了。",
+        "我在。說。",
     ]),
-    (["幹", "靠北", "媽的", "wtf", "what the"], [
-        "冷靜冷靜！{mention} 發生什麼事了？😅",
-        "哇哦！{mention} 看起來你心情不太好...😮",
+    (["好帥", "好厲害", "你好棒", "你最棒", "讚"], [
+        "我知道。",
+        "這是基本。",
+        "嗯。",
+        "不用誇。做好是本分。",
+    ]),
+    (["喜歡你", "愛你", "你好可愛", "愛你喔"], [
+        "……少說這種話。",
+        "不准亂說。",
+        "哼。",
+        "……知道了。",
+    ]),
+    (["幹", "靠北", "媽的", "wtf", "what the", "幹嘛", "怎樣"], [
+        "冷靜。",
+        "說清楚。",
+        "發生什麼事了。",
+    ]),
+    (["餓", "好餓", "吃飯", "沒吃飯"], [
+        "去吃。別讓自己餓著。",
+        "吃飯比什麼都重要。快去。",
+        "還坐在這裡？去吃飯。",
     ]),
 ]
 
@@ -90,44 +115,71 @@ class Events(commands.Cog):
         text_lower = text.lower()
 
         if any(kw in text_lower for kw in ["幾點", "時間", "time"]):
-            import datetime
             now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
-            await message.reply(f"現在台灣時間是 **{now.strftime('%H:%M')}** 哦！{mention} 🕐")
+            await message.reply(f"**{now.strftime('%H:%M')}**。記住了。")
 
         elif any(kw in text_lower for kw in ["你好", "哈囉", "嗨", "hi", "hello", "hey"]):
             responses = [
-                f"哈囉！{mention} 你好呀！😄",
-                f"嗨！{mention} 很高興見到你！🌟",
-                f"你好！{mention} 有什麼我能幫你的？✨",
+                "嗯。",
+                "有事說事。",
+                f"{mention} 說。",
             ]
             await message.reply(random.choice(responses))
 
-        elif any(kw in text_lower for kw in ["你是誰", "你是什麼", "介紹"]):
+        elif any(kw in text_lower for kw in ["你是誰", "你是什麼", "介紹", "自我介紹"]):
             embed = discord.Embed(
-                title="🤖 我是誰？",
+                title="我是誰？",
                 description=(
-                    f"嗨！{mention} 我是這個伺服器的機器人！\n\n"
-                    "我可以幫你查資訊、玩小遊戲、自動回覆訊息，\n"
-                    f"還有很多好玩的功能！輸入 `!help` 看看我能做什麼吧 ✨"
+                    "問這種問題。\n\n"
+                    "我是這個伺服器的管理者。\n"
+                    "查資訊、查指令、協助群務——這些都是我的職責。\n\n"
+                    f"輸入 `!help` 自己看。我不重複說兩遍。"
                 ),
-                color=discord.Color.blurple(),
+                color=discord.Color.dark_gray(),
             )
             embed.set_thumbnail(url=self.bot.user.display_avatar.url)
             await message.reply(embed=embed)
 
         elif any(kw in text_lower for kw in ["bye", "掰掰", "再見", "拜拜"]):
             responses = [
-                f"掰掰！{mention} 下次見！👋",
-                f"再見！{mention} 要記得回來找我玩哦！😄",
-                f"拜拜！{mention} 保重～ 🌟",
+                "嗯。去吧。",
+                "。",
+                "明天還要上線。",
+                "去吧。",
+            ]
+            await message.reply(random.choice(responses))
+
+        elif any(kw in text_lower for kw in ["謝謝", "感謝", "thanks", "thx"]):
+            responses = [
+                "不必謝。",
+                "這是應該的。",
+                "嗯。",
+            ]
+            await message.reply(random.choice(responses))
+
+        elif any(kw in text_lower for kw in ["喜歡", "愛你", "可愛", "帥"]):
+            responses = [
+                "……少說這種話。",
+                "哼。",
+                "不准亂說。",
+                "……知道了。",
+            ]
+            await message.reply(random.choice(responses))
+
+        elif any(kw in text_lower for kw in ["幫幫我", "幫我", "help me", "救我"]):
+            responses = [
+                f"{mention} 說清楚，什麼事。",
+                "說。我在聽。",
+                "講重點。",
             ]
             await message.reply(random.choice(responses))
 
         else:
             responses = [
-                f"{mention} 你說什麼？我有點聽不懂耶... 😅 試試 `!help` 看看我能做什麼！",
-                f"嗯...{mention} 我不太確定你的意思，不過我在聽！輸入 `!help` 看看我的功能 📖",
-                f"{mention} 我收到了！但我還不夠聰明理解這個...😊 用 `!help` 看看我懂什麼！",
+                "說清楚一點。",
+                "沒聽懂。再說一次。",
+                f"輸入 `!help` 看指令。別讓我重複。",
+                "……說重點。",
             ]
             await message.reply(random.choice(responses))
 
@@ -136,12 +188,16 @@ class Events(commands.Cog):
         channel = member.guild.system_channel
         if channel:
             embed = discord.Embed(
-                title="🎉 歡迎新成員！",
-                description=f"歡迎 {member.mention} 加入 **{member.guild.name}**！\n希望你在這裡玩得開心！😊",
-                color=discord.Color.green(),
+                title="新人。",
+                description=(
+                    f"{member.mention}，來了。\n\n"
+                    "規矩自己看。別讓我說第二遍。\n"
+                    "有問題，找我。"
+                ),
+                color=discord.Color.dark_gray(),
             )
             embed.set_thumbnail(url=member.display_avatar.url)
-            embed.set_footer(text=f"現在共有 {member.guild.member_count} 位成員")
+            embed.set_footer(text=f"目前共 {member.guild.member_count} 人。")
             await channel.send(embed=embed)
 
 
