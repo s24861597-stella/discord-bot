@@ -5,11 +5,11 @@ import datetime
 import discord
 from discord.ext import commands, tasks
 from discord.ui import View, Button
-import google.generativeai as genai
+from google import genai
 from collections import deque
 
 # ── Gemini 設定 ───────────────────────────────────────────
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 SYSTEM_PROMPT = """
 你是「銀河」，一個極致傲嬌、毒舌、高效率、隱藏式溫柔的 Discord 伺服器管理機器人。
@@ -48,31 +48,20 @@ RANDOM_SNARK = [
     "有人在嗎。說句話。",
 ]
 
-# ── 對話記憶（最近5組對話）────────────────────────────────
-conversation_memory = deque(maxlen=10)
-
-
-def add_to_memory(role: str, content: str):
-    conversation_memory.append({"role": role, "parts": [content]})
-
 
 async def get_gemini_response(user_message: str, is_stella: bool = False) -> str:
+    stella_hint = "（注意：這是 Stella 小星星，對她說話要稍微溫柔一點，但還是傲嬌風格，嚴禁毒舌）" if is_stella else ""
     for attempt in range(3):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
-            history = list(conversation_memory)
-            stella_hint = "（注意：這是 Stella，對她說話要稍微溫柔一點，但還是傲嬌風格）" if is_stella else ""
-            chat = model.start_chat(history=history)
-            response = await chat.send_message_async(
-                f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}"
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}",
             )
             reply = response.text.strip()
             if random.random() < 0.3:
                 emoji = random.choice(RANDOM_EMOJIS)
                 if emoji:
                     reply = f"{reply} {emoji}"
-            add_to_memory("user", user_message)
-            add_to_memory("model", reply)
             return reply
         except Exception as e:
             if "429" in str(e) and attempt < 2:
@@ -155,7 +144,7 @@ class ConfessView(View):
 
 # ── Cog ──────────────────────────────────────────────────
 class Events(commands.Cog):
-    STELLA_ID = 840206076477308958
+    STELLA_ID = 840206076477308958  # Stella 的 Discord ID
 
     def __init__(self, bot):
         self.bot = bot
