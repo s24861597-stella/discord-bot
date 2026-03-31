@@ -57,7 +57,7 @@ def add_to_memory(role: str, content: str):
 
 async def get_gemini_response(user_message: str, is_stella: bool = False) -> str:
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
         history = list(conversation_memory)
         stella_hint = "（注意：這是 Stella，對她說話要稍微溫柔一點，但還是傲嬌風格）" if is_stella else ""
 
