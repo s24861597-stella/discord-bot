@@ -54,7 +54,7 @@ async def get_gemini_response(user_message: str, is_stella: bool = False) -> str
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 contents=f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}",
             )
             reply = response.text.strip()
