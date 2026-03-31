@@ -118,7 +118,7 @@ class MentionView(View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("輪不到你動。", ephemeral=True)
+            await interaction.response.send_message("輪不到你動。", ephemeral=False)
             return False
         return True
 
@@ -138,13 +138,13 @@ class MentionView(View):
             ),
             color=discord.Color.dark_gray(),
         )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed, ephemeral=False)
 
     @discord.ui.button(label="現在幾點", style=discord.ButtonStyle.secondary)
     async def show_time(self, interaction: discord.Interaction, button: Button):
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
         await interaction.response.send_message(
-            f"**{now.strftime('%H:%M')}**。記住了。", ephemeral=True
+            f"**{now.strftime('%H:%M')}**。記住了。", ephemeral=False
         )
 
     @discord.ui.button(label="說個笑話", style=discord.ButtonStyle.secondary)
@@ -156,7 +156,7 @@ class MentionView(View):
             "笑話：有人以為叫我一聲我就會陪他聊天。",
             "哼。",
         ]
-        await interaction.response.send_message(random.choice(jokes), ephemeral=True)
+        await interaction.response.send_message(random.choice(jokes), ephemeral=False)
 
     async def on_timeout(self):
         for item in self.children:
@@ -171,7 +171,7 @@ class ConfessView(View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("關你什麼事。", ephemeral=True)
+            await interaction.response.send_message("關你什麼事。", ephemeral=False)
             return False
         return True
 
