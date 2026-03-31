@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 import datetime
@@ -56,31 +57,29 @@ def add_to_memory(role: str, content: str):
 
 
 async def get_gemini_response(user_message: str, is_stella: bool = False) -> str:
-    try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        history = list(conversation_memory)
-        stella_hint = "（注意：這是 Stella，對她說話要稍微溫柔一點，但還是傲嬌風格）" if is_stella else ""
-
-        chat = model.start_chat(history=history)
-        response = await chat.send_message_async(
-            f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}"
-        )
-
-        reply = response.text.strip()
-
-        if random.random() < 0.3:
-            emoji = random.choice(RANDOM_EMOJIS)
-            if emoji:
-                reply = f"{reply} {emoji}"
-
-        add_to_memory("user", user_message)
-        add_to_memory("model", reply)
-
-        return reply
-
-    except Exception as e:
-        print(f"Gemini 錯誤：{e}")
-        return random.choice(["……嘖。", "說重點。", "哼。"])
+    for attempt in range(3):
+        try:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            history = list(conversation_memory)
+            stella_hint = "（注意：這是 Stella，對她說話要稍微溫柔一點，但還是傲嬌風格）" if is_stella else ""
+            chat = model.start_chat(history=history)
+            response = await chat.send_message_async(
+                f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}"
+            )
+            reply = response.text.strip()
+            if random.random() < 0.3:
+                emoji = random.choice(RANDOM_EMOJIS)
+                if emoji:
+                    reply = f"{reply} {emoji}"
+            add_to_memory("user", user_message)
+            add_to_memory("model", reply)
+            return reply
+        except Exception as e:
+            if "429" in str(e) and attempt < 2:
+                await asyncio.sleep(5 * (attempt + 1))
+                continue
+            print(f"Gemini 錯誤：{e}")
+            return random.choice(["……嘖。", "說重點。", "哼。"])
 
 
 # ── 互動按鈕 View ─────────────────────────────────────────
