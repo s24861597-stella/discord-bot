@@ -50,12 +50,16 @@ RANDOM_SNARK = [
 
 
 async def get_gemini_response(user_message: str, is_stella: bool = False) -> str:
-    stella_hint = "（注意：這是 Stella 小星星，對她說話要稍微溫柔一點，但還是傲嬌風格，嚴禁毒舌）" if is_stella else ""
+    stella_hint = "（注意：這是 Stella 小星星，對她說話要稍微溫柔一點，嚴禁毒舌）" if is_stella else ""
     for attempt in range(3):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}",
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}",
+                )
             )
             reply = response.text.strip()
             if random.random() < 0.3:
