@@ -3,6 +3,7 @@ import datetime
 import discord
 from discord.ext import commands
 from discord.ui import View, Button
+from discord.ext import tasks
 
 
 # ── 艾特但沒說話 ──────────────────────────────────────────
@@ -109,6 +110,25 @@ REACTION_TRIGGERS = {
     "想你": "🫀",
 }
 
+# ── 主動吐槽（安靜時自動發） ──────────────────────────────
+RANDOM_SNARK = [
+    "安靜得讓人煩躁。",
+    "怎麼都沒人說話。本座不是擺著看的。",
+    "……嘖。",
+    "這裡的人都去哪了。",
+    "沉默是金？本座不這麼認為。",
+    "有人在嗎。說句話。",
+]
+
+# ── Stella 專屬回覆 ────────────────────────────────────────
+STELLA_RESPONSES = [
+    "嗯，我在。",
+    "說吧，我聽著。",
+    "累了就過來。",
+    "……是妳啊。",
+    "有話直說。",
+]
+
 
 # ── 互動按鈕 View ─────────────────────────────────────────
 class MentionView(View):
@@ -202,13 +222,54 @@ class ConfessView(View):
 class Events(commands.Cog):
     """事件與自動回覆"""
 
+    STELLA_ID = 840206076477308958  # Stella 的 Discord ID
+
     def __init__(self, bot):
         self.bot = bot
+        self.last_message_time = datetime.datetime.now()
+        self.snark_channel_id = None  # 會自動記錄第一個有人說話的頻道
+        self.snark_loop.start()
+
+    def cog_unload(self):
+        self.snark_loop.cancel()
+
+    @tasks.loop(hours=3)
+    async def snark_loop(self):
+        """每3小時如果沒人說話就主動吐槽"""
+        now = datetime.datetime.now()
+        if (now - self.last_message_time).total_seconds() > 10800:  # 3小時
+            if self.snark_channel_id:
+                channel = self.bot.get_channel(self.snark_channel_id)
+                if channel:
+                    await channel.send(random.choice(RANDOM_SNARK))
+
+    @snark_loop.before_loop
+    async def before_snark_loop(self):
+        await self.bot.wait_until_ready()
+
+    async def _get_response(self, message, base_responses):
+        """根據是否為 Stella 決定回覆內容"""
+        is_stella = message.author.id == self.STELLA_ID
+        chance = random.random()
+
+        if is_stella and chance < 0.3:
+            return f"……{random.choice(STELLA_RESPONSES)}"
+
+        # 5% 機率對一般人主動吐槽
+        if not is_stella and chance < 0.05:
+            return random.choice(["嘖，話真多。", "……本座沒空理你。", "說這麼多幹嘛。"])
+
+        return random.choice(base_responses)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
+
+        # 記錄最後說話時間和頻道
+        self.last_message_time = datetime.datetime.now()
+        if self.snark_channel_id is None:
+            self.snark_channel_id = message.channel.id
 
         mention = message.author.mention
         content = message.content.lower()
@@ -230,7 +291,9 @@ class Events(commands.Cog):
             if rest:
                 await self._handle_mention_with_text(message, rest, mention)
             else:
-                response = random.choice(MENTION_RESPONSES).format(mention=mention)
+                base = random.choice(MENTION_RESPONSES).format(mention=mention)
+                response = await self._get_response(message, MENTION_RESPONSES)
+                response = response.format(mention=mention)
                 view = MentionView(author_id=message.author.id)
                 await message.reply(response, view=view)
             return
@@ -238,8 +301,8 @@ class Events(commands.Cog):
         # 自動回覆
         for keywords, responses in AUTO_REPLIES:
             if any(kw in content for kw in keywords):
-                response = random.choice(responses).format(mention=mention)
-                # 告白類關鍵字加上互動按鈕
+                response = await self._get_response(message, responses)
+                response = response.format(mention=mention)
                 if any(kw in content for kw in ["喜歡你", "愛你", "i love you", "love you"]):
                     view = ConfessView(author_id=message.author.id)
                     await message.reply(response, view=view)
@@ -256,7 +319,8 @@ class Events(commands.Cog):
 
         elif any(kw in text_lower for kw in ["你好", "哈囉", "嗨", "hi", "hello", "hey"]):
             view = MentionView(author_id=message.author.id)
-            await message.reply(random.choice(["嗯。", "有事？", "說。"]), view=view)
+            response = await self._get_response(message, ["嗯。", "有事？", "說。"])
+            await message.reply(response, view=view)
 
         elif any(kw in text_lower for kw in ["你是誰", "你是什麼", "介紹", "自我介紹"]):
             embed = discord.Embed(
@@ -283,17 +347,13 @@ class Events(commands.Cog):
 
         elif any(kw in text_lower for kw in ["喜歡", "愛你", "love", "可愛", "帥"]):
             view = ConfessView(author_id=message.author.id)
-            await message.reply(
-                random.choice(["……少說這種話。", "哼。", "不准亂說。"]),
-                view=view
-            )
+            response = await self._get_response(message, ["……少說這種話。", "哼。", "不准亂說。"])
+            await message.reply(response, view=view)
 
         elif any(kw in text_lower for kw in ["幫幫我", "幫我", "help me", "救我"]):
             view = MentionView(author_id=message.author.id)
-            await message.reply(
-                random.choice([f"{mention} 說清楚，什麼事。", "說。我在聽。", "講重點。"]),
-                view=view
-            )
+            response = await self._get_response(message, [f"{mention} 說清楚，什麼事。", "說。我在聽。", "講重點。"])
+            await message.reply(response, view=view)
 
         elif any(kw in text_lower for kw in ["無聊", "bored"]):
             view = MentionView(author_id=message.author.id)
@@ -301,10 +361,8 @@ class Events(commands.Cog):
 
         else:
             view = MentionView(author_id=message.author.id)
-            await message.reply(
-                random.choice(["說清楚一點。", "沒聽懂。再說一次。", "……說重點。"]),
-                view=view
-            )
+            response = await self._get_response(message, ["說清楚一點。", "沒聽懂。再說一次。", "……說重點。"])
+            await message.reply(response, view=view)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
