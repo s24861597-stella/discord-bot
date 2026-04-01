@@ -206,6 +206,13 @@ class Events(commands.Cog):
             await message.reply(reply, view=view)
             return
 
+   # 抱抱觸發
+        HUG_KEYWORDS = ["抱抱", "抱一下", "給我抱抱"]
+        if any(kw in content for kw in HUG_KEYWORDS):
+            reply = await get_gemini_response("有人跟你說抱抱", is_stella=is_stella)
+            await message.reply(reply)
+            return
+
         # 表情反應
         REACTION_TRIGGERS = {
             "哈哈": "😂", "笑死": "💀", "可愛": "🥰",
