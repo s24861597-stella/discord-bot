@@ -157,7 +157,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.last_message_time = datetime.datetime.now()
-        self.snark_channel_id = None
+        self.snark_channel_id = 1402200150843330583
         self.snark_loop.start()
 
     def cog_unload(self):
@@ -182,8 +182,7 @@ class Events(commands.Cog):
             return
 
         self.last_message_time = datetime.datetime.now()
-        if self.snark_channel_id is None:
-            self.snark_channel_id = message.channel.id
+        
 
         content = message.content
         is_stella = message.author.id == self.STELLA_ID
