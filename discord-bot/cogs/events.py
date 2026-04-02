@@ -206,7 +206,7 @@ class Events(commands.Cog):
             await message.reply(reply, view=view)
             return
 
-       # 抱抱觸發
+        # 抱抱觸發
         HUG_KEYWORDS = ["抱抱", "抱一下", "給我抱抱"]
         if any(kw in content for kw in HUG_KEYWORDS):
             reply = await get_gemini_response("有人想要抱抱，你要傲嬌地給，嘴硬但還是抱了，不可以拒絕", is_stella=is_stella)
