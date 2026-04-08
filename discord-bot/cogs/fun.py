@@ -70,32 +70,28 @@ class Fun(commands.Cog):
 
     @commands.command(name="8ball", aliases=["魔法球"])
     async def eight_ball(self, ctx, *, question: str):
-        """占卜"""
-        responses = [
-            ("是。",          "✅", discord.Color.dark_green()),
-            ("當然。",        "✅", discord.Color.dark_green()),
-            ("毫無疑問。",    "✅", discord.Color.dark_green()),
-            ("確定。",        "✅", discord.Color.dark_green()),
-            ("可能吧。",      "✅", discord.Color.dark_green()),
-            ("暫時不明。",    "🔮", discord.Color.dark_gray()),
-            ("再想想。",      "🔮", discord.Color.dark_gray()),
-            ("說不準。",      "🔮", discord.Color.dark_gray()),
-            ("現在問不對。",  "🔮", discord.Color.dark_gray()),
-            ("不。",          "❌", discord.Color.dark_red()),
-            ("別抱希望了。",  "❌", discord.Color.dark_red()),
-            ("不可能。",      "❌", discord.Color.dark_red()),
-            ("想都不用想。",  "❌", discord.Color.dark_red()),
-            ("放棄吧。",      "❌", discord.Color.dark_red()),
-        ]
+    """占卜"""
+    responses = [
+        ("星河之力已給出答案——是的，本座確認。", "✅", discord.Color.dark_green()),
+        ("宇宙意志明確指示：當然可以。毋庸置疑。", "✅", discord.Color.dark_green()),
+        ("（閉目感應三秒）毫無疑問。本座的預言從不出錯。", "✅", discord.Color.dark_green()),
+        ("（展開星圖）確定。就照這個方向走，別猶豫。", "✅", discord.Color.dark_green()),
+        ("（微微點頭）可能吧。宇宙偏向於是，但變數仍在。", "✅", discord.Color.dark_green()),
+        ("（皺眉凝視星河）……暫時看不清，宇宙迷霧太濃。", "🔮", discord.Color.dark_gray()),
+        ("（搖頭）時機未到，再想想。本座無法妄下定論。", "🔮", discord.Color.dark_gray()),
+        ("（星圖模糊）說不準。宇宙此刻態度曖昧，本座也沒辦法。", "🔮", discord.Color.dark_gray()),
+        ("（放下星圖）現在問不對時機。換個時間再來。", "🔮", discord.Color.dark_gray()),
+        ("（冷靜搖頭）不。星河明確拒絕了這個可能性。", "❌", discord.Color.dark_red()),
+        ("（嘆氣）別抱希望了。宇宙意志已經給出答案，接受吧。", "❌", discord.Color.dark_red()),
+        ("（斬釘截鐵）不可能。本座在星河中找不到任何支持的跡象。", "❌", discord.Color.dark_red()),
+        ("（闔上星圖）想都不用想。這條路宇宙不允許。", "❌", discord.Color.dark_red()),
+        ("（輕拍你肩膀）放棄吧。本座說這話不是殘忍，是為你好。", "❌", discord.Color.dark_red()),
+    ]
 
-        response, icon, color = random.choice(responses)
-        embed = discord.Embed(
-            description=f"「{question}」\n\n{icon} **{response}**",
-            color=color,
-        )
-        embed.set_footer(text="本座已言盡於此。")
-        await ctx.send(embed=embed)
-
-
-async def setup(bot):
-    await bot.add_cog(Fun(bot))
+    response, icon, color = random.choice(responses)
+    embed = discord.Embed(
+        description=f"「{question}」\n\n{icon} {response}",
+        color=color,
+    )
+    embed.set_footer(text="本座已言盡於此。星河見證。")
+    await ctx.send(embed=embed)
