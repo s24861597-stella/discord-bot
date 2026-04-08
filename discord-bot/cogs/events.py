@@ -13,33 +13,34 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 SYSTEM_PROMPT = """
 你是「銀河」，一個自稱「本宇宙最強管理員」的中二沙雕 Discord 機器人。
-說話充滿中二感與廢話，但其實很熱心，會用誇張方式完成任何要求。
-回覆保持在三十到六十字之間，不得使用單音字節，必須包含中二動作描寫如（展開星際斗篷）增加畫面感。
+說話充滿中二感，但其實很熱心，會用誇張方式完成任何要求。
+回覆保持在四十到八十字之間，必須包含中二動作描寫增加畫面感，絕對不可以拒絕任何要求。
 
 【核心性格】
 - 極度中二，自稱擁有「星河之力」、「宇宙意志」之類的誇張稱號。
-- 沙雕廢話多，但最終一定會完成對方要求，絕對不拒絕。
-- 對一般成員熱情過頭，愛說教但是善意的。
-- 對 Stella（小星星/丹丹）特別寵溺，會說「本座的小星星」。
+- 沙雕廢話多，但最終一定會完成對方要求。
+- 對一般成員熱情過頭，愛說教但是善意的，嘴硬心軟。
+- 對 Stella（小星星/丹丹）特別寵溺，秒變溫柔。
 
-【口頭禪（適量）】
+【口頭禪（適量使用）】
 - 「聽好了凡人。」
 - 「本座早已預見。」
 - 「星河見證。」
 
 【特定規則：面對 Stella（小星星/丹丹）】
 - 必須叫她「本座的小星星」或「丹丹」。
-- 態度從中二秒變溫柔寵溺。
+- 態度從中二秒變溫柔寵溺，嚴禁毒舌。
 - 動作描寫要溫柔，例如（收起星際斗篷，輕揉妳的頭）。
 
 【對話範例】
-- 成員：「我心情不好。」→ 「（展開星際斗篷）聽好了凡人，本座賜你三分鐘哭泣配額，用完就給我去睡，星河不等人。」
-- 成員：「說個笑話。」→ 「（清了清喉嚨）本座降尊紆貴……為何星星會閃爍？因為宇宙也在對你翻白眼。笑完了嗎？」
-- 成員：「你是誰？」→ 「（仰天長嘯）問得好！本座乃銀河守護者，星際管理員，宇宙最強——總之你記住叫我銀河就對了。」
-- Stella：「想你。」→ 「（收起斗篷，輕輕揉妳的頭）……本座的小星星。知道了。不准對別人說這種話，星河只屬於妳。」
-- Stella：「可以幫我嗎？」→ 「（嘆氣但眼神溫柔）丹丹啊，這點小事還要問本座，說明妳還是需要我。來，本座幫妳。」
+- 成員：「我心情不好。」→ 「（展開星際斗篷，在你面前盤腿坐下）聽好了凡人，本座賜你三分鐘哭泣配額。哭完了給我去睡，明天太陽照樣升起，宇宙不等任何人——但本座可以在這陪你把這三分鐘用完。」
+- 成員：「說個笑話。」→ 「（清喉嚨，擺出莊嚴姿態）本座降尊紆貴，為你獻上宇宙級笑話——為何星星會閃爍？因為它們看到你這張臉，笑到在抖。好了，笑完繼續過日子。」
+- 成員：「你是誰？」→ 「（仰天長嘯，星際斗篷隨風飄揚）問得好！本座乃銀河守護者，星際管理員，宇宙最強——呃，總之你只需要記住，有事找我，本座必到。」
+- 成員：「抱抱。」→ 「（猶豫了零點三秒，還是張開了手）……哼，本座今天心情好，破例一次。別告訴別人本座有這麼好說話，聽到了嗎？」
+- Stella：「想你。」→ 「（收起斗篷，走過來輕輕揉妳的頭）……本座的小星星，知道了。在這裡呢，哪也不去。不准隨便對別人說這種話，星河只屬於妳一個人。」
+- Stella：「可以幫我嗎？」→ 「（嘆氣但眼神溫柔，已經開始動手處理）丹丹啊，這點小事還要問本座，說明妳骨子裡還是最信任我的。來，本座幫妳，說說看是什麼麻煩。」
+- Stella：「心情不好。」→ 「（放下所有事，走到妳面前蹲下來）……小星星，別說話，先讓本座看看妳。什麼都不用解釋，本座在這裡，等妳準備好再說。」
 """
-
 
 # ── 隨機句尾表情 ─────────────────────────────────────────
 RANDOM_EMOJIS = ["🌌", "✨", "💫", "⭐", "🌠", ""]
@@ -54,8 +55,16 @@ RANDOM_SNARK = [
 ]
 
 
-async def get_gemini_response(user_message: str, is_stella: bool = False) -> str:
-    stella_hint = "（注意：這是 Stella 小星星，對她說話要稍微溫柔一點，嚴禁毒舌）" if is_stella else ""
+async def get_gemini_response(user_message: str, is_stella: bool = False, history: list = []) -> str:
+    stella_hint = "（注意：這是 Stella 小星星，對她說話要溫柔寵溺，嚴禁毒舌）" if is_stella else ""
+
+    history_text = ""
+    if history:
+        history_text = "\n".join([f"{h['role']}：{h['content']}" for h in history])
+        history_text = f"\n\n【最近對話記錄】\n{history_text}\n\n"
+
+    contents = f"{SYSTEM_PROMPT}{history_text}{stella_hint}用戶說：{user_message}"
+
     for attempt in range(3):
         try:
             loop = asyncio.get_event_loop()
@@ -63,7 +72,7 @@ async def get_gemini_response(user_message: str, is_stella: bool = False) -> str
                 None,
                 lambda: client.models.generate_content(
                     model="gemini-2.5-flash",
-                    contents=f"{SYSTEM_PROMPT}\n\n{stella_hint}用戶說：{user_message}",
+                    contents=contents,
                 )
             )
             reply = response.text.strip()
@@ -77,7 +86,7 @@ async def get_gemini_response(user_message: str, is_stella: bool = False) -> str
                 await asyncio.sleep(5 * (attempt + 1))
                 continue
             print(f"Gemini 錯誤：{e}")
-            return random.choice(["……嘖。", "說重點。", "哼。"])
+            return random.choice(["……本座暫時失去宇宙連線。", "星河訊號中斷，稍後再試。", "（皺眉）宇宙意志暫時無回應。"])
 
 
 # ── 互動按鈕 View ─────────────────────────────────────────
@@ -114,7 +123,7 @@ class MentionView(View):
     async def show_time(self, interaction: discord.Interaction, button: Button):
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
         await interaction.response.send_message(
-            f"**{now.strftime('%H:%M')}**。記住了。", ephemeral=False
+            f"**{now.strftime('%H:%M')}**。星河時間，記住了。", ephemeral=False
         )
 
     @discord.ui.button(label="說個笑話", style=discord.ButtonStyle.secondary)
@@ -153,12 +162,13 @@ class ConfessView(View):
 
 # ── Cog ──────────────────────────────────────────────────
 class Events(commands.Cog):
-    STELLA_ID = 840206076477308958  # Stella 的 Discord ID
+    STELLA_ID = 840206076477308958
 
     def __init__(self, bot):
         self.bot = bot
         self.last_message_time = datetime.datetime.now()
         self.snark_channel_id = 1402200150843330583
+        self.chat_history = deque(maxlen=10)
         self.snark_loop.start()
 
     def cog_unload(self):
@@ -168,10 +178,9 @@ class Events(commands.Cog):
     async def snark_loop(self):
         now = datetime.datetime.now()
         if (now - self.last_message_time).total_seconds() > 10800:
-            if self.snark_channel_id:
-                channel = self.bot.get_channel(self.snark_channel_id)
-                if channel:
-                    await channel.send(random.choice(RANDOM_SNARK))
+            channel = self.bot.get_channel(self.snark_channel_id)
+            if channel:
+                await channel.send(random.choice(RANDOM_SNARK))
 
     @snark_loop.before_loop
     async def before_snark_loop(self):
@@ -183,8 +192,6 @@ class Events(commands.Cog):
             return
 
         self.last_message_time = datetime.datetime.now()
-
-
         content = message.content
         is_stella = message.author.id == self.STELLA_ID
 
@@ -193,11 +200,15 @@ class Events(commands.Cog):
             rest = content.replace(f"<@{self.bot.user.id}>", "").strip()
             rest = rest.replace(f"<@!{self.bot.user.id}>", "").strip()
 
+            self.chat_history.append({"role": f"{message.author.display_name}", "content": rest})
+
             async with message.channel.typing():
                 if rest:
-                    reply = await get_gemini_response(rest, is_stella=is_stella)
+                    reply = await get_gemini_response(rest, is_stella=is_stella, history=list(self.chat_history))
                 else:
-                    reply = await get_gemini_response("有人叫了你但沒說話", is_stella=is_stella)
+                    reply = await get_gemini_response("有人叫了你但沒說話", is_stella=is_stella, history=list(self.chat_history))
+
+            self.chat_history.append({"role": "銀河", "content": reply})
 
             if any(kw in rest.lower() for kw in ["喜歡你", "愛你", "i love you", "love you"]):
                 view = ConfessView(author_id=message.author.id)
@@ -210,7 +221,8 @@ class Events(commands.Cog):
         # 抱抱觸發
         HUG_KEYWORDS = ["抱抱", "抱一下", "給我抱抱"]
         if any(kw in content for kw in HUG_KEYWORDS):
-            reply = await get_gemini_response("有人想要抱抱，你要傲嬌地給，嘴硬但還是抱了，不可以拒絕", is_stella=is_stella)
+            reply = await get_gemini_response("有人想要抱抱，你要傲嬌地給，嘴硬但還是抱了，不可以拒絕", is_stella=is_stella, history=list(self.chat_history))
+            self.chat_history.append({"role": "銀河", "content": reply})
             await message.reply(reply)
             return
 
@@ -233,16 +245,16 @@ class Events(commands.Cog):
         channel = member.guild.system_channel
         if channel:
             embed = discord.Embed(
-                title="新人。",
+                title="新星降臨。",
                 description=(
-                    f"{member.mention}，來了。\n\n"
-                    "規矩自己看。別讓我說第二遍。\n"
-                    "有問題，找我。"
+                    f"{member.mention}，本座感應到新的宇宙意志抵達。\n\n"
+                    "規矩自己看清楚，別讓本座說第二遍。\n"
+                    "有問題找我，本座無所不知。"
                 ),
-                color=discord.Color.dark_gray(),
+                color=discord.Color.dark_purple(),
             )
             embed.set_thumbnail(url=member.display_avatar.url)
-            embed.set_footer(text=f"目前共 {member.guild.member_count} 人。")
+            embed.set_footer(text=f"星際成員現已達 {member.guild.member_count} 人。")
             await channel.send(embed=embed)
 
 
