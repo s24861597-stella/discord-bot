@@ -94,7 +94,7 @@ class Fun(commands.Cog):
         color=color,
     )
     embed.set_footer(text="本座已言盡於此。星河見證。")
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 async def setup(bot):
