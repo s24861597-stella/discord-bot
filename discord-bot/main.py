@@ -20,6 +20,7 @@ COGS = [
     "cogs.fun",
     "cogs.events",
     "cogs.zodiac",
+    "cogs.image",
 ]
 
 
