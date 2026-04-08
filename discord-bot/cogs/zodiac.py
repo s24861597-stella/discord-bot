@@ -1,9 +1,10 @@
 import datetime
 import discord
 import os
+import random
 from discord.ext import commands
 from discord.ui import View, Select
-from google import genai  # 記得確保 events.py 也有用這個
+from google import genai
 
 # ── Gemini 設定 ───────────────────────────────────────────
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -24,65 +25,59 @@ ZODIACS = {
 }
 
 async def get_gemini_horoscope(zodiac: str):
-    """叫 Gemini 真的去根據當天星象算命"""
+    """叫 Gemini 穿上星際斗篷，給出最中二的即時預言"""
     today = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y/%m/%d")
     prompt = f"""
-    你是銀河守護者，請根據 {today} 的星象，為 {zodiac} 提供今日運勢。
-    請嚴格遵守以下格式回覆，不要有額外廢話，各項評分給 1~5 顆星（★）：
+    你是「銀河」，一個極度中二沙雕、自稱「本宇宙最強管理員」的 Discord 機器人。
+    現在請為你的「凡人信徒」提供 {today} 的 {zodiac} 運勢預言。
     
-    綜合短評：(20字以內)
-    綜合運勢：(例如：★★★★☆)
-    戀愛運：(例如：★★★☆☆)
-    財運：(例如：★★★★★)
-    事業運：(例如：★★☆☆☆)
-    幸運顏色：(顏色名稱)
-    幸運數字：(1-99)
-    詳細提示：(包含戀愛、財運、事業的綜合中二風建議，約 60 字)
+    回覆規範：
+    1. 語氣必須中二沙雕，充滿「本座」、「星河之力」、「凡人」等字眼。
+    2. 第一行必須是一句浮誇的今日短評。
+    3. 必須包含：綜合運勢、戀愛運、財運、事業運（皆用 1-5 顆 ★ 表示）。
+    4. 必須包含：幸運顏色、幸運數字。
+    5. 最後是一段約 80 字的「星河指引」，以傲嬌中二但溫柔的口吻給予建議。
+    6. 不要使用 Markdown 代碼區塊，直接回覆純文字內容。
     """
     try:
+        # 使用穩定版模型
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
         )
         return response.text.strip()
-    except:
-        return "（星圖模糊）宇宙迷霧太濃，本座暫時看不清。妳待會再問一次。"
+    except Exception as e:
+        return f"（星圖震動）宇宙意志受到了干擾！本座暫時無法窺探天機，妳等等再來吧。錯誤：{e}"
 
 class ZodiacSelect(Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label=name, value=name, emoji=info["emoji"], description=info["date"])
+            discord.SelectOption(
+                label=name,
+                value=name,
+                emoji=info["emoji"],
+                description=info["date"],
+            )
             for name, info in ZODIACS.items()
         ]
-        super().__init__(placeholder="選擇你的星座，由本座為你觀星…", options=options)
+        super().__init__(placeholder="選擇你的星座，讓本座為妳觀星…", options=options)
 
     async def callback(self, interaction: discord.Interaction):
         zodiac = self.values[0]
-        await interaction.response.defer() # 讓它轉圈圈等 Gemini 回覆
+        # 先回應讓選單不卡住，因為 Gemini 需要時間思考
+        await interaction.response.defer()
         
-        raw_text = await get_gemini_horoscope(zodiac)
-        
-        # 解析 Gemini 的回覆 (簡單解析)
-        data = {}
-        for line in raw_text.split('\n'):
-            if '：' in line:
-                key, val = line.split('：', 1)
-                data[key.strip()] = val.strip()
+        # 呼叫 Gemini 獲取占卜內容
+        horoscope_content = await get_gemini_horoscope(zodiac)
 
         embed = discord.Embed(
-            title=f"{ZODIACS[zodiac]['emoji']} {zodiac}  今日星象預言",
-            description=f"*{datetime.datetime.now().strftime('%Y/%m/%d')}*\n\n「{data.get('綜合短評', '星河流轉，命運已定。')}」",
+            title=f"{ZODIACS[zodiac]['emoji']} {zodiac} · 星河預言報告",
+            description=horoscope_content,
             color=discord.Color.dark_purple(),
         )
-        embed.add_field(name="綜合運勢", value=data.get('綜合運勢', '★★★☆☆'), inline=True)
-        embed.add_field(name="戀愛運",   value=data.get('戀愛運', '★★★☆☆'), inline=True)
-        embed.add_field(name="財運",     value=data.get('財運', '★★★☆☆'), inline=True)
-        embed.add_field(name="事業運",   value=data.get('事業運', '★★★☆☆'), inline=True)
-        embed.add_field(name="幸運顏色", value=f"**{data.get('幸運顏色', '星辰紫')}**", inline=True)
-        embed.add_field(name="幸運數字", value=f"**{data.get('幸運數字', '7')}**", inline=True)
-        embed.add_field(name="星河指引", value=data.get('詳細提示', '這片宇宙，始終有光指引著妳。'), inline=False)
         embed.set_footer(text="本座已言盡於此。星河見證。")
         
+        # 使用 followup 發送，因為剛才用了 defer
         await interaction.followup.send(embed=embed)
 
 class ZodiacView(View):
@@ -91,12 +86,16 @@ class ZodiacView(View):
         self.add_item(ZodiacSelect())
 
 class Zodiac(commands.Cog):
+    """星座運勢（Gemini AI 版）"""
+
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="星座", aliases=["運勢"])
+    @commands.command(name="星座", aliases=["運勢", "zodiac"])
     async def zodiac(self, ctx):
-        await ctx.send("（展開星圖）凡人，選妳的星座吧。讓本座看看妳今天的命運。", view=ZodiacView())
+        """查詢星座今日運勢"""
+        view = ZodiacView()
+        await ctx.send("（展開星際斗篷）凡人，選妳的星座吧。本座將跨越光年為妳窺探天機。", view=view)
 
 async def setup(bot):
     await bot.add_cog(Zodiac(bot))
