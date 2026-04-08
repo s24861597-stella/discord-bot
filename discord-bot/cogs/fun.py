@@ -1,4 +1,4 @@
-import random
+⁷import random
 import discord
 from discord.ext import commands
 
@@ -70,7 +70,7 @@ class Fun(commands.Cog):
 
     @commands.command(name="8ball", aliases=["魔法球"])
     async def eight_ball(self, ctx, *, question: str):
-    """占卜"""
+        """占卜"""
     responses = [
         ("星河之力已給出答案——是的，本座確認。", "✅", discord.Color.dark_green()),
         ("宇宙意志明確指示：當然可以。毋庸置疑。", "✅", discord.Color.dark_green()),
