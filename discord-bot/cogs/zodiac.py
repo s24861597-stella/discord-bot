@@ -42,7 +42,7 @@ async def get_gemini_horoscope(zodiac: str):
     try:
         # 使用穩定版模型
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt
         )
         return response.text.strip()
