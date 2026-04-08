@@ -95,3 +95,7 @@ class Fun(commands.Cog):
     )
     embed.set_footer(text="退下吧，本座已言盡於此。星河見證。")
     await ctx.send(embed=embed)
+
+
+async def setup(bot):
+    await bot.add_cog(Fun(bot))
