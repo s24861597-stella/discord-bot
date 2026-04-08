@@ -93,9 +93,9 @@ class Fun(commands.Cog):
         description=f"「{question}」\n\n{icon} {response}",
         color=color,
     )
-    embed.set_footer(text="退下吧，本座已言盡於此。星河見證。")
+    embed.set_footer(text="本座已言盡於此。星河見證。")
     await ctx.send(embed=embed)
 
 
 async def setup(bot):
-    await bot.add_cog(Fun(bot))
+  await bot.add_cog(Fun(bot))
