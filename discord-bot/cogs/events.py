@@ -82,7 +82,7 @@ async def get_gemini_response(user_message: str, is_stella: bool = False, histor
                     reply = f"{reply} {emoji}"
             return reply
         except Exception as e:
-            if "429" in str(e) or "503" in str(e)) and attempt < 2:
+            if ("429" in str(e) or "503" in str(e)) and attempt < 2:
                 await asyncio.sleep(10 * (attempt + 1))
                 continue
             print(f"Gemini 錯誤：{e}")
