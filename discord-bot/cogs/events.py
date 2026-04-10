@@ -82,8 +82,8 @@ async def get_gemini_response(user_message: str, is_stella: bool = False, histor
                     reply = f"{reply} {emoji}"
             return reply
         except Exception as e:
-            if "429" in str(e) and attempt < 2:
-                await asyncio.sleep(5 * (attempt + 1))
+            if "429" in str(e) or "503" in str(e)) and attempt < 2:
+                await asyncio.sleep(10 * (attempt + 1))
                 continue
             print(f"Gemini 錯誤：{e}")
             return random.choice(["……本座暫時失去宇宙連線。", "星河訊號中斷，稍後再試。", "（皺眉）宇宙意志暫時無回應。"])
