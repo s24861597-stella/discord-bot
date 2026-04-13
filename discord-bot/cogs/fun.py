@@ -101,7 +101,7 @@ class Fun(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="吃什麼", aliases=["eat", "今天吃什麼", "晚餐吃什麼", "午餐吃什麼"])
-async def what_to_eat(self, ctx):
+     async def what_to_eat(self, ctx):
     """今天吃什麼"""
     for attempt in range(3):
         try:
