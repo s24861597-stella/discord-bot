@@ -110,7 +110,7 @@ class Fun(commands.Cog):
                 response = await loop.run_in_executor(
                     None,
                     lambda: client.models.generate_content(
-                        model="gemini-1.5-flash", # 建議用 1.5 最穩
+                        model="gemini-2.5-flash", # 建議用 1.5 最穩
                         contents="你是中二沙雕管理員銀河...（後略）"
                     )
                 )
