@@ -1,6 +1,11 @@
 import random
 import discord
 from discord.ext import commands
+from google import genai
+import os
+import asyncio
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 class Fun(commands.Cog):
     """互動指令"""
@@ -96,17 +101,24 @@ class Fun(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="吃什麼", aliases=["eat", "今天吃什麼", "晚餐吃什麼", "午餐吃什麼"])
-async def what_to_eat(self, ctx):
-    """今天吃什麼"""
-    import sys
-    sys.path.append("..")
-    from cogs.events import get_gemini_response
-    reply = await get_gemini_response("用戶問今天要吃什麼，你要用中二風格推薦一樣具體的食物，只能說一樣，要有畫面感")
-    embed = discord.Embed(
-        description=reply,
-        color=discord.Color.dark_purple(),
-    )
-    await ctx.send(embed=embed)
+    async def what_to_eat(self, ctx):
+        """今天吃什麼"""
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents="你是中二沙雕管理員銀河，用戶問今天要吃什麼，用中二風格推薦一樣具體的食物，只能說一樣，四十字以內，要有動作描寫。",
+            )
+        )
+        reply = response.text.strip()
+        embed = discord.Embed(
+            description=reply,
+            color=discord.Color.dark_purple(),
+        )
+        embed.set_footer(text="本座的宇宙食譜，不接受反駁。")
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Fun(bot))
