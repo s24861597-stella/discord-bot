@@ -95,5 +95,18 @@ class Fun(commands.Cog):
         embed.set_footer(text="本座已言盡於此。星河見證。")
         await ctx.send(embed=embed)
 
+    @commands.command(name="吃什麼", aliases=["eat", "今天吃什麼", "晚餐吃什麼", "午餐吃什麼"])
+async def what_to_eat(self, ctx):
+    """今天吃什麼"""
+    import sys
+    sys.path.append("..")
+    from cogs.events import get_gemini_response
+    reply = await get_gemini_response("用戶問今天要吃什麼，你要用中二風格推薦一樣具體的食物，只能說一樣，要有畫面感")
+    embed = discord.Embed(
+        description=reply,
+        color=discord.Color.dark_purple(),
+    )
+    await ctx.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Fun(bot))
