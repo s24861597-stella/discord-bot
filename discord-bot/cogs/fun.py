@@ -100,33 +100,34 @@ class Fun(commands.Cog):
         embed.set_footer(text="本座已言盡於此。星河見證。")
         await ctx.send(embed=embed)
 
-    @commands.command(name="吃什麼", aliases=["eat", "今天吃什麼", "晚餐吃什麼", "午餐吃什麼"])
-      async def what_to_eat(self, ctx):
-    """今天吃什麼"""
-    for attempt in range(3):
-        try:
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents="你是中二沙雕管理員銀河，用戶問今天要吃什麼，用中二風格推薦一樣具體的食物，只能說一樣，四十字以內，要有動作描寫。",
+        @commands.command(name="吃什麼", aliases=["eat", "今天吃什麼"])
+    async def what_to_eat(self, ctx):
+        """今天吃什麼"""
+        for attempt in range(3):
+            try:
+                # 注意：這幾行必須對齊 try 裡面的位置
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.models.generate_content(
+                        model="gemini-1.5-flash", # 建議用 1.5 最穩
+                        contents="你是中二沙雕管理員銀河...（後略）"
+                    )
                 )
-            )
-            reply = response.text.strip()
-            embed = discord.Embed(
-                description=reply,
-                color=discord.Color.dark_purple(),
-            )
-            embed.set_footer(text="本座的宇宙食譜，不接受反駁。")
-            await ctx.send(embed=embed)
-            return
-        except Exception as e:
-            if ("429" in str(e) or "503" in str(e)) and attempt < 2:
-                await asyncio.sleep(10 * (attempt + 1))
-                continue
-            await ctx.send("（皺眉）宇宙訊號中斷，本座暫時無法存取食譜。稍後再試。")
-            return
+                
+                reply = response.text.strip()
+                embed = discord.Embed(description=reply, color=discord.Color.dark_purple())
+                embed.set_footer(text="本座的宇宙建議，不接受反駁。")
+                await ctx.send(embed=embed)
+                return
+                
+            except Exception as e:
+                if ("429" in str(e) or "503" in str(e)) and attempt < 2:
+                    await asyncio.sleep(10 * (attempt + 1))
+                    continue
+                await ctx.send("(皺眉) 宇宙訊號中斷...")
+                return
+
 
 
 async def setup(bot):
