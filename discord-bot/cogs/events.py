@@ -1,3 +1,4 @@
+python
 import asyncio
 import os
 import random
@@ -65,28 +66,33 @@ async def get_gemini_response(user_message: str, is_stella: bool = False, histor
 
     contents = f"{SYSTEM_PROMPT}{history_text}{stella_hint}用戶說：{user_message}"
 
-    for attempt in range(3):
-        try:
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=contents,
+    models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash"]
+
+    for model_name in models_to_try:
+        for attempt in range(2):
+            try:
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                    )
                 )
-            )
-            reply = response.text.strip()
-            if random.random() < 0.3:
-                emoji = random.choice(RANDOM_EMOJIS)
-                if emoji:
-                    reply = f"{reply} {emoji}"
-            return reply
-        except Exception as e:
-            if ("429" in str(e) or "503" in str(e)) and attempt < 2:
-                await asyncio.sleep(10 * (attempt + 1))
-                continue
-            print(f"Gemini 錯誤：{e}")
-            return random.choice(["……本座暫時失去宇宙連線。", "星河訊號中斷，稍後再試。", "（皺眉）宇宙意志暫時無回應。"])
+                reply = response.text.strip()
+                if random.random() < 0.3:
+                    emoji = random.choice(RANDOM_EMOJIS)
+                    if emoji:
+                        reply = f"{reply} {emoji}"
+                return reply
+            except Exception as e:
+                if ("429" in str(e) or "503" in str(e)) and attempt < 1:
+                    await asyncio.sleep(10 * (attempt + 1))
+                    continue
+                print(f"Gemini 錯誤 ({model_name})：{e}")
+                break
+
+    return random.choice(["……本座暫時失去宇宙連線。", "星河訊號中斷，稍後再試。", "（皺眉）宇宙意志暫時無回應。"])
 
 
 # ── 互動按鈕 View ─────────────────────────────────────────
