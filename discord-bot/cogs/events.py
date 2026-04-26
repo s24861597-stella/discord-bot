@@ -45,15 +45,6 @@ SYSTEM_PROMPT = """
 # ── 隨機句尾表情 ─────────────────────────────────────────
 RANDOM_EMOJIS = ["🌌", "✨", "💫", "⭐", "🌠", ""]
 
-# ── 安靜時自動吐槽 ────────────────────────────────────────
-RANDOM_SNARK = [
-    "（環顧星際）這片宇宙怎麼如此寂靜……本座感到不安。",
-    "聽好了凡人們，本座不是擺著看的，說句話證明你們還活著。",
-    "星河見證——此頻道已沉寂許久，本座表示強烈不滿。",
-    "（展開斗篷）宇宙意志告訴本座，這裡需要有人說話。就是現在。",
-    "本座早已預見此刻的沉默……但還是覺得很煩。有人在嗎。",
-]
-
 
 async def get_gemini_response(user_message: str, is_stella: bool = False, history: list = []) -> str:
     stella_hint = "（注意：這是 Stella 小星星，對她說話要溫柔寵溺，嚴禁毒舌）" if is_stella else ""
@@ -185,7 +176,8 @@ class Events(commands.Cog):
         if (now - self.last_message_time).total_seconds() > 10800:
             channel = self.bot.get_channel(self.snark_channel_id)
             if channel:
-                await channel.send(random.choice(RANDOM_SNARK))
+                reply = await get_gemini_response("頻道太安靜了，你忍不住出來用中二風格講一個笑話或說一段無厘頭的話活絡氣氛，自由發揮")
+                await channel.send(reply)
 
     @snark_loop.before_loop
     async def before_snark_loop(self):
