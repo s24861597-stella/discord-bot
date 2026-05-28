@@ -117,7 +117,7 @@ class Verify(commands.Cog):
 
                     await thread.send(
                         f"✨ {after.mention} 驗證已通過！\n\n"
-                        f"現在可以前往 <#{TARGET_CHANNEL_ID}> 開始使用伺服器啦 🌙"
+                        f"現在可以前往 <#{TARGET_CHANNEL_ID}> 進入真理之門啦 🌙"
                     )
 
                     break
