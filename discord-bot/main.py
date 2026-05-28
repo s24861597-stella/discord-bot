@@ -1,15 +1,21 @@
 import os
+
 import asyncio
+
 import discord
+
 from discord.ext import commands
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+
 PREFIX = os.getenv("COMMAND_PREFIX", "!")
 
 intents = discord.Intents.default()
+
 intents.message_content = True
 
 bot = commands.Bot(command_prefix=PREFIX, intents=intents, help_command=None)
@@ -21,8 +27,8 @@ COGS = [
     "cogs.events",
     "cogs.zodiac",
     "cogs.image",
+    "cogs.verify",
 ]
-
 
 @bot.event
 async def on_ready():
@@ -32,7 +38,6 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Game(name=f"{PREFIX}help | Discord Bot")
     )
-
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -48,7 +53,6 @@ async def on_command_error(ctx, error):
         print(f"發生錯誤：{error}")
         await ctx.send(f"❌ 發生了一個錯誤：{error}")
 
-
 async def load_cogs():
     for cog in COGS:
         try:
@@ -56,7 +60,6 @@ async def load_cogs():
             print(f"✅ 載入模組：{cog}")
         except Exception as e:
             print(f"❌ 無法載入模組 {cog}：{e}")
-
 
 async def main():
     if not TOKEN:
@@ -67,7 +70,6 @@ async def main():
     async with bot:
         await load_cogs()
         await bot.start(TOKEN)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
