@@ -3,7 +3,15 @@ from discord.ext import commands
 from discord import app_commands
 
 # ── 設定區 ──────────────────────────────────────────
+
 HYPEN_ID = 776078980968742944  # 君君 Discord ID
+
+TARGET_ROLE_ID = 1509403067769159690
+# 驗證通過後會給的身份組 ID
+
+TARGET_CHANNEL_ID = 1509406126884524144
+# ⚔️｜光冕集會所 頻道 ID
+
 # ────────────────────────────────────────────────────
 
 
@@ -52,6 +60,7 @@ class Verify(commands.Cog):
 
         # 加入君君
         hypen = guild.get_member(HYPEN_ID)
+
         if hypen:
             await thread.add_user(hypen)
 
@@ -84,6 +93,30 @@ class Verify(commands.Cog):
         await interaction.edit_original_response(
             content=f"已為你開啟驗證通道 {thread.mention}，請前往上傳截圖 🌟"
         )
+
+    # 偵測身份組新增
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+
+        before_roles = [role.id for role in before.roles]
+        after_roles = [role.id for role in after.roles]
+
+        # 剛獲得身份組
+        if (
+            TARGET_ROLE_ID not in before_roles
+            and TARGET_ROLE_ID in after_roles
+        ):
+
+            channel = after.guild.get_channel(TARGET_CHANNEL_ID)
+
+            try:
+                await after.send(
+                    f"✨ 妳的驗證已通過！\n\n"
+                    f"現在可以前往 {channel.mention} 開始使用伺服器啦 🌙"
+                )
+
+            except discord.Forbidden:
+                print(f"無法私訊 {after}")
 
 
 async def setup(bot: commands.Bot):
