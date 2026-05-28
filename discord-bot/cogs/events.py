@@ -9,6 +9,7 @@ from google import genai
 from collections import deque
 
 # ── Gemini 設定 ───────────────────────────────────────────
+
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 SYSTEM_PROMPT = """
@@ -43,21 +44,17 @@ SYSTEM_PROMPT = """
 """
 
 # ── 隨機句尾表情 ─────────────────────────────────────────
-RANDOM_EMOJIS = ["🌌", "✨", "💫", "⭐", "🌠", ""]
 
+RANDOM_EMOJIS = ["🌌", "✨", "💫", "⭐", "🌠", ""]
 
 async def get_gemini_response(user_message: str, is_stella: bool = False, history: list = []) -> str:
     stella_hint = "（注意：這是 Stella 小星星，對她說話要溫柔寵溺，嚴禁毒舌）" if is_stella else ""
-
     history_text = ""
     if history:
         history_text = "\n".join([f"{h['role']}：{h['content']}" for h in history])
         history_text = f"\n\n【最近對話記錄】\n{history_text}\n\n"
-
     contents = f"{SYSTEM_PROMPT}{history_text}{stella_hint}用戶說：{user_message}"
-
     models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash"]
-
     for model_name in models_to_try:
         for attempt in range(2):
             try:
@@ -81,11 +78,10 @@ async def get_gemini_response(user_message: str, is_stella: bool = False, histor
                     continue
                 print(f"Gemini 錯誤 ({model_name})：{e}")
                 break
-
     return random.choice(["……本座暫時失去宇宙連線。", "星河訊號中斷，稍後再試。", "（皺眉）宇宙意志暫時無回應。"])
 
-
 # ── 互動按鈕 View ─────────────────────────────────────────
+
 class MentionView(View):
     def __init__(self, author_id: int):
         super().__init__(timeout=60)
@@ -131,7 +127,6 @@ class MentionView(View):
         for item in self.children:
             item.disabled = True
 
-
 class ConfessView(View):
     def __init__(self, author_id: int):
         super().__init__(timeout=30)
@@ -155,8 +150,8 @@ class ConfessView(View):
         await interaction.response.send_message(response)
         self.stop()
 
-
 # ── Cog ──────────────────────────────────────────────────
+
 class Events(commands.Cog):
     STELLA_ID = 840206076477308958
 
@@ -196,22 +191,17 @@ class Events(commands.Cog):
         if self.bot.user.mentioned_in(message) and not message.mention_everyone:
             rest = content.replace(f"<@{self.bot.user.id}>", "").strip()
             rest = rest.replace(f"<@!{self.bot.user.id}>", "").strip()
-
             self.chat_history.append({"role": f"{message.author.display_name}", "content": rest})
-
             async with message.channel.typing():
                 if rest:
                     reply = await get_gemini_response(rest, is_stella=is_stella, history=list(self.chat_history))
                 else:
                     reply = await get_gemini_response("有人叫了你但沒說話", is_stella=is_stella, history=list(self.chat_history))
-
             self.chat_history.append({"role": "銀河", "content": reply})
-
             if any(kw in rest.lower() for kw in ["喜歡你", "愛你", "i love you", "love you"]):
                 view = ConfessView(author_id=message.author.id)
             else:
                 view = MentionView(author_id=message.author.id)
-
             await message.reply(reply, view=view)
             return
 
@@ -253,6 +243,14 @@ class Events(commands.Cog):
             embed.set_thumbnail(url=member.display_avatar.url)
             embed.set_footer(text=f"星際成員現已達 {member.guild.member_count} 人。")
             await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        channel = discord.utils.get(member.guild.text_channels, name="🗑｜進入黑洞")
+        if channel:
+            now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+            time_str = now.strftime("%Y/%m/%d %H:%M")
+            await channel.send(f"🌑 **{member.display_name}** 掰掰您勒 · {time_str}")
 
 
 async def setup(bot):
