@@ -107,16 +107,23 @@ class Verify(commands.Cog):
             and TARGET_ROLE_ID in after_roles
         ):
 
-            channel = after.guild.get_channel(TARGET_CHANNEL_ID)
+            guild = after.guild
+            forum = guild.get_channel(TARGET_CHANNEL_ID)
 
-            try:
-                await after.send(
-                    f"✨ 妳的驗證已通過！\n\n"
-                    f"現在可以前往 {channel.mention} 開始使用伺服器啦 🌙"
-                )
+            if not forum:
+                return
 
-            except discord.Forbidden:
-                print(f"無法私訊 {after}")
+            # 找玩家對應的驗證串
+            for thread in forum.threads:
+
+                if thread.name == f"玩家驗證－{after.display_name}":
+
+                    await thread.send(
+                        f"✨ {after.mention} 驗證已通過！\n\n"
+                        f"現在可以前往 <#{TARGET_CHANNEL_ID}> 開始使用伺服器啦 🌙"
+                    )
+
+                    break
 
 
 async def setup(bot: commands.Bot):
