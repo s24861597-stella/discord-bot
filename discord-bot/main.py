@@ -38,6 +38,8 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Game(name=f"{PREFIX}help | Discord Bot")
     )
+    synced = await bot.tree.sync()
+    print(f"✅ 同步斜線指令：{len(synced)} 個")
 
 @bot.event
 async def on_command_error(ctx, error):
