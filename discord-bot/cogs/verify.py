@@ -108,14 +108,11 @@ class Verify(commands.Cog):
         ):
 
             guild = after.guild
-            forum = guild.get_channel(TARGET_CHANNEL_ID)
 
-            if not forum:
-                return
+            # 搜尋所有 thread
+            for thread in guild.threads:
 
-            # 找玩家對應的驗證串
-            for thread in forum.threads:
-
+                # 找到對應驗證串
                 if thread.name == f"玩家驗證－{after.display_name}":
 
                     await thread.send(
