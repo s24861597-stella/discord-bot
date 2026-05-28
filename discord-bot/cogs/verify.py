@@ -3,8 +3,9 @@ from discord.ext import commands
 from discord import app_commands
 
 # ── 設定區 ──────────────────────────────────────────
-VERIFY_CHANNEL_NAME = "🎟｜發票中心"   # 放按鈕的頻道名稱
-ADMIN_ROLE_NAME     = "🛰୨୧．管理員"   # 要通知的管理身分組名稱
+VERIFY_CHANNEL_NAME = "🎟｜發票中心"
+ADMIN_ROLE_NAME     = "🛰୨୧．管理員"
+HYPEN_ID            = 776078980968742944  # Hypen 的 Discord ID
 # ────────────────────────────────────────────────────
 
 
@@ -25,7 +26,7 @@ class VerifyButton(discord.ui.View):
         member  = interaction.user
         channel = interaction.channel
 
-        # 防重複：檢查該玩家是否已有開著的驗證串
+        # 防重複
         existing = discord.utils.get(
             channel.threads,
             name=f"玩家驗證－{member.display_name}"
@@ -44,8 +45,13 @@ class VerifyButton(discord.ui.View):
             invitable=False
         )
 
-        # 把申請玩家加入串
+        # 加入玩家
         await thread.add_member(member)
+
+        # 加入 Hypen
+        hypen = guild.get_member(HYPEN_ID)
+        if hypen:
+            await thread.add_member(hypen)
 
         # 找管理身分組
         admin_role = discord.utils.get(guild.roles, name=ADMIN_ROLE_NAME)
