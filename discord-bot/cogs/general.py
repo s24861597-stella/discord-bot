@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-
+from discord import app_commands
 
 class General(commands.Cog):
     """一般指令"""
@@ -12,13 +12,11 @@ class General(commands.Cog):
     async def help_command(self, ctx):
         """顯示所有可用指令"""
         prefix = self.bot.command_prefix
-
         embed = discord.Embed(
             title="指令清單",
             description=f"前綴：`{prefix}` ── 看清楚，別問我兩遍。",
             color=discord.Color.dark_gray(),
         )
-
         embed.add_field(
             name="基本",
             value=(
@@ -28,7 +26,6 @@ class General(commands.Cog):
             ),
             inline=False,
         )
-
         embed.add_field(
             name="查詢",
             value=(
@@ -38,7 +35,6 @@ class General(commands.Cog):
             ),
             inline=False,
         )
-
         embed.add_field(
             name="趣味",
             value=(
@@ -51,7 +47,6 @@ class General(commands.Cog):
             ),
             inline=False,
         )
-
         embed.add_field(
             name="♎ 星座運勢",
             value=(
@@ -61,7 +56,6 @@ class General(commands.Cog):
             ),
             inline=False,
         )
-
         embed.set_footer(text="沒有下一次提醒了。")
         await ctx.send(embed=embed)
 
@@ -94,6 +88,17 @@ class General(commands.Cog):
             color=discord.Color.dark_gray(),
         )
         await ctx.send(embed=embed)
+
+    @app_commands.command(name="說", description="讓銀河說出指定文字（管理員專用）")
+    @app_commands.checks.has_role("🛰୨୧．管理員")
+    async def say(self, interaction: discord.Interaction, 文字: str):
+        await interaction.channel.send(文字)
+        await interaction.response.send_message("✅ 已發送！", ephemeral=True)
+
+    @say.error
+    async def say_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.MissingRole):
+            await interaction.response.send_message("❌ 只有管理員才能使用這個指令！", ephemeral=True)
 
 
 async def setup(bot):
