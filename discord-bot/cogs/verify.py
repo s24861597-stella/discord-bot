@@ -1,28 +1,27 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import datetime
 
 # ── 設定區 ──────────────────────────────────────────
-ADMIN_ROLE_NAME     = "🛰୨୧．管理員"
-HYPEN_ID            = 776078980968742944  # Hypen 的 Discord ID
+ADMIN_ROLE_NAME = "🛰୨୧．管理員"
+HYPEN_ID        = 776078980968742944  # Hypen 的 Discord ID
 # ────────────────────────────────────────────────────
+
 
 class Verify(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # ── 斜線指令：開放給所有人！一般成員輸入後直接開私人串 ──
     @app_commands.command(
         name="驗證設置",
-        description="開啟妳的專屬玩家驗證通道（直接建立私人討論串）"
+        description="開啟你的專屬玩家驗證通道"
     )
     async def setup_verify(self, interaction: discord.Interaction):
         guild   = interaction.guild
         member  = interaction.user
         channel = interaction.channel
 
-        # 1. 防重複：檢查該玩家在目前頻道是否已有開著的驗證串
+        # 防重複
         existing = discord.utils.get(
             channel.threads,
             name=f"玩家驗證－{member.display_name}"
@@ -34,26 +33,32 @@ class Verify(commands.Cog):
             )
             return
 
-        # 2. 直接建立私人討論串（不需要按鈕了！）
+        # 先回覆（Discord 要求 3 秒內回應）
+        await interaction.response.send_message(
+            "正在為你開啟驗證通道，請稍候…🌟",
+            ephemeral=True
+        )
+
+        # 建立私人討論串，invitable=True 讓玩家能看到
         thread = await channel.create_thread(
             name=f"玩家驗證－{member.display_name}",
             type=discord.ChannelType.private_thread,
-            invitable=False
+            invitable=True
         )
 
-        # 3. 把申請的成員自己拉進去
+        # 加入玩家
         await thread.add_member(member)
 
-        # 4. 把君君（Hypen）也拉進去
+        # 加入 Hypen
         hypen = guild.get_member(HYPEN_ID)
         if hypen:
             await thread.add_member(hypen)
 
-        # 5. 找管理身分組來通知
+        # 找管理身分組
         admin_role = discord.utils.get(guild.roles, name=ADMIN_ROLE_NAME)
         admin_mention = admin_role.mention if admin_role else "管理員"
 
-        # 6. 私人串裡的說明訊息（維持妳的精美設定）
+        # 說明訊息
         embed = discord.Embed(
             title="⭐ 玩家身分驗證",
             description=(
@@ -69,15 +74,15 @@ class Verify(commands.Cog):
         )
         embed.set_footer(text="Powered by 銀河 🌌")
 
-        # 在私人討論串發送通知與說明
+        # tag 管理員 + 發說明
         await thread.send(content=f"{admin_mention} 新驗證申請！")
         await thread.send(embed=embed)
 
-        # 7. 回覆點擊指令的成員（ephemeral=True，只有他自己看得到提示）
-        await interaction.response.send_message(
-            f"已為你開啟驗證通道 {thread.mention}，請前往上傳截圖 🌟",
-            ephemeral=True
+        # 更新回覆
+        await interaction.edit_original_response(
+            content=f"已為你開啟驗證通道 {thread.mention}，請前往上傳截圖 🌟"
         )
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Verify(bot))
